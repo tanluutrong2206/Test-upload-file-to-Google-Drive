@@ -19,7 +19,7 @@ namespace Test_upload_file_to_Google_Drive
         // If modifying these scopes, delete your previously saved credentials
         // at ~/.credentials/drive-dotnet-quickstart.json
         // C:\Users\tanlu\Documents\.credentials\drive-dotnet-quickstart.json
-        static string[] Scopes = { Google.Apis.Drive.v2.DriveService.Scope.DriveReadonly };
+        static string[] Scopes = { Google.Apis.Drive.v3.DriveService.Scope.Drive };
         static string ApplicationName = "Drive API .NET Quickstart";
 
         static void Main(string[] args)
@@ -48,8 +48,9 @@ namespace Test_upload_file_to_Google_Drive
                 HttpClientInitializer = credential,
                 ApplicationName = ApplicationName,
             });
-            
 
+            //set timeout
+            service.HttpClient.Timeout = TimeSpan.FromMinutes(10);
 
             //get list of all folders
             var files = retrieveAllFolders(service);
@@ -60,11 +61,13 @@ namespace Test_upload_file_to_Google_Drive
                 Console.WriteLine("{0} ({1})", file.Name, file.Id);
                 if (file.Name.Contains("MindMeister"))
                 {
-                    UploadFileToGoogleDrive(file.Id, service);
+                    //CreateNewFolder(file.Id, service, "hello world");
+                    CreateNewFile(file.Id, service, "../../files/CC00706x-FUN180029-Kiều Hoàng Long.pdf", "CC00706x-FUN180029-Kiều Hoàng Long.pdf");
                 }
             }
             Console.Read();
         }
+
         public static List<Google.Apis.Drive.v3.Data.File> retrieveAllFolders(DriveService service)
         {
             List<Google.Apis.Drive.v3.Data.File> result = new List<Google.Apis.Drive.v3.Data.File>();
@@ -93,29 +96,47 @@ namespace Test_upload_file_to_Google_Drive
             return result;
         }
 
-        internal static void UploadFileToGoogleDrive(string folderID, DriveService driveService)
+        internal static void CreateNewFolder(string folderID, DriveService driveService, string folderName)
         {
             var fileMetadata = new Google.Apis.Drive.v3.Data.File()
             {
-                Name = "photo.jpg",
-                //MimeType = "application/vnd.google-apps.document",
-                Parents = new List<string>
-                {
-                    folderID
-                }
+                Name = folderName,
+                MimeType= "application/vnd.google-apps.folder",
+                Parents = new List<string> { folderID },
+                //Size = 28000,
+            };
+            FilesResource.CreateRequest request;
+            
+            request = driveService.Files.Create(fileMetadata);
+            Google.Apis.Drive.v3.Data.File file = request.Execute();
+            
+
+            Console.WriteLine("File ID: " + file.Id);
+        }
+
+        internal static void CreateNewFile(string folderID, DriveService driveService, string filePath, string fileName)
+        {
+            var fileMetadata = new Google.Apis.Drive.v3.Data.File()
+            {
+                Name = fileName,
+                MimeType= "application/pdf",
+                Parents = new List<string> { folderID },
+                //Size = 28000,
             };
             FilesResource.CreateMediaUpload request;
-            using (var stream = new FileStream("C:\\Users\\tanlu\\Downloads\\safe_image.jpg", FileMode.Open))
+
+            using (var stream = new System.IO.FileStream(filePath,
+                        System.IO.FileMode.Open))
             {
                 request = driveService.Files.Create(
-                    fileMetadata, stream, "image/jpeg");
+                    fileMetadata, stream, "application/pdf");
                 request.Fields = "id";
                 request.Upload();
             }
+
             var file = request.ResponseBody;
-            Console.WriteLine("File Uploaded");
-            //Console.WriteLine("File ID: " + file.Id);
-            //mind: 0B3Cf6r5C_7CfUFJtZjZRZEZSdnM
+
+            Console.WriteLine("File ID: " + file.Id);
         }
     }
 }
