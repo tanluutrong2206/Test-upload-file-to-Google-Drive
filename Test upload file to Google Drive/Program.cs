@@ -18,7 +18,9 @@ namespace Test_upload_file_to_Google_Drive
     {
         // If modifying these scopes, delete your previously saved credentials
         // at ~/.credentials/drive-dotnet-quickstart.json
-        // C:\Users\tanlu\Documents\.credentials\drive-dotnet-quickstart.json
+        // C:\Users\tanlu\Documents\.credentials\drive-dotnet-quickstart.json       this is my folder path
+        //Reading https://developers.google.com/drive/v3/web/quickstart/dotnet to get more information
+
         static string[] Scopes = { Google.Apis.Drive.v3.DriveService.Scope.Drive };
         static string ApplicationName = "Drive API .NET Quickstart";
 
@@ -101,15 +103,15 @@ namespace Test_upload_file_to_Google_Drive
             var fileMetadata = new Google.Apis.Drive.v3.Data.File()
             {
                 Name = folderName,
-                MimeType= "application/vnd.google-apps.folder",
+                MimeType = "application/vnd.google-apps.folder",
                 Parents = new List<string> { folderID },
                 //Size = 28000,
             };
             FilesResource.CreateRequest request;
-            
+
             request = driveService.Files.Create(fileMetadata);
             Google.Apis.Drive.v3.Data.File file = request.Execute();
-            
+
 
             Console.WriteLine("File ID: " + file.Id);
         }
@@ -119,21 +121,27 @@ namespace Test_upload_file_to_Google_Drive
             var fileMetadata = new Google.Apis.Drive.v3.Data.File()
             {
                 Name = fileName,
-                MimeType= "application/pdf",
+
+                //find Mimetype corresponding with type of file inside below link
+                //https://developers.google.com/drive/v3/web/integrate-open#open_and_convert_google_docs_in_your_app
+                MimeType = "application/pdf",
+
+                //Choose what parent folder containt file
+                //Earch file/folder inside google drive has identify id
+                //Take that when reading all folder when start or after create new folder
                 Parents = new List<string> { folderID },
-                //Size = 28000,
             };
+
             FilesResource.CreateMediaUpload request;
 
-            using (var stream = new System.IO.FileStream(filePath,
-                        System.IO.FileMode.Open))
+            using (var stream = new System.IO.FileStream(filePath, System.IO.FileMode.Open))
             {
-                request = driveService.Files.Create(
-                    fileMetadata, stream, "application/pdf");
+                request = driveService.Files.Create(fileMetadata, stream, "application/pdf");
                 request.Fields = "id";
                 request.Upload();
             }
 
+            //After create folder, get back folder to take folderID
             var file = request.ResponseBody;
 
             Console.WriteLine("File ID: " + file.Id);
