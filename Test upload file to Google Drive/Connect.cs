@@ -6,16 +6,19 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Security;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Test_upload_file_to_Google_Drive
+namespace Template_certificate
 {
     public class Connect
     {
         private string[] Scopes = { DriveService.Scope.Drive };
         public string FileId { get; set; }
+
         public UserCredential GetAuthenication()
         {
             UserCredential credential;
@@ -34,19 +37,23 @@ namespace Test_upload_file_to_Google_Drive
                     CancellationToken.None,
                     new FileDataStore(credPath, true)).Result;
             }
-
+            
             return credential;
         }
 
-        public List<Google.Apis.Drive.v3.Data.File> RetrieveAllFolders(DriveService service)
+        public List<Google.Apis.Drive.v3.Data.File> RetrieveAllFolders(DriveService service, string parentFolderId)
         {
             List<Google.Apis.Drive.v3.Data.File> result = new List<Google.Apis.Drive.v3.Data.File>();
             FilesResource.ListRequest request = service.Files.List();
 
             //setup filter only select folder
             // cant use finding extension because in google drive docs file, powerpoint, excel, ... does not show extension
-            request.Q = "mimeType = 'application/vnd.google-apps.folder'";
-            
+            string filter = "mimeType = 'application/vnd.google-apps.folder'";
+            if (!string.IsNullOrEmpty(parentFolderId))
+            {
+                filter += $" and '{parentFolderId}' in parents";
+            }
+            request.Q = filter;
             do
             {
                 try

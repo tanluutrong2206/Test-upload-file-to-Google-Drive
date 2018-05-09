@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Test_upload_file_to_Google_Drive
+namespace Template_certificate
 {
     class Program
     {
