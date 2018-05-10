@@ -112,8 +112,11 @@ namespace Template_certificate
             {
                 Name = folderName,
                 MimeType = "application/vnd.google-apps.folder",
-                Parents = new List<string> { folderContainId },
             };
+            if (!string.IsNullOrEmpty(folderContainId))
+            {
+                fileMetadata.Parents = new List<string> { folderContainId };
+            }
             FilesResource.CreateRequest request;
 
             request = driveService.Files.Create(fileMetadata);
