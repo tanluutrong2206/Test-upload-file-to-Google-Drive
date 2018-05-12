@@ -160,5 +160,10 @@ namespace Template_certificate
 
             FileId = file.Id;
         }
+
+        public void DeleteFile(DriveService service, string id)
+        {
+            service.Files.Delete(id).Execute();
+        }
     }
 }
