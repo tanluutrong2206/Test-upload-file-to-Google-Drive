@@ -37,7 +37,7 @@ namespace Template_certificate
                     CancellationToken.None,
                     new FileDataStore(credPath, true)).Result;
             }
-            
+
             return credential;
         }
 
@@ -48,7 +48,7 @@ namespace Template_certificate
 
             //setup filter only select folder
             // cant use finding extension because in google drive docs file, powerpoint, excel, ... does not show extension
-            string filter = "mimeType = 'application/vnd.google-apps.folder'";
+            string filter = "mimeType = 'application/vnd.google-apps.folder' and trashed = false";
             if (!string.IsNullOrEmpty(parentFolderId))
             {
                 filter += $" and '{parentFolderId}' in parents";
@@ -79,7 +79,7 @@ namespace Template_certificate
 
             //setup filter only select folder
             // cant use finding extension because in google drive docs file, powerpoint, excel, ... does not show extension
-            string filter = "mimeType = 'application/pdf' ";
+            string filter = "mimeType = 'application/pdf' and trashed = false ";
 
             if (!string.IsNullOrEmpty(parentId))
             {
@@ -163,7 +163,11 @@ namespace Template_certificate
 
         public void DeleteFile(DriveService service, string id)
         {
-            service.Files.Delete(id).Execute();
+            //delete file
+            //service.Files.Delete(id).Execute();
+
+            //move file to trash
+            service.Files.Update(new Google.Apis.Drive.v3.Data.File() { Trashed = true }, id).Execute();
         }
     }
 }
